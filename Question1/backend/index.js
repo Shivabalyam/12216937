@@ -10,7 +10,7 @@ const PORT = 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-const db = {}; // In-memory DB
+const db = {};
 
 // POST /shorten - Shorten a long URL
 app.post('/shorten', (req, res) => {
@@ -51,10 +51,11 @@ app.get('/:shortCode', (req, res) => {
     return res.status(410).json({ error: 'Link expired' });
   }
 
+  // Log the click
   entry.clicks.push({
     timestamp: now.toISOString(),
     source: req.headers.referer || 'unknown',
-    location: 'India', 
+    location: 'India',
   });
 
   res.json({ originalUrl: entry.originalUrl });
@@ -65,5 +66,5 @@ app.get('/all', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(` Backend running at http://localhost:${PORT}`);
+  console.log(`✅ Backend running at http://localhost:${PORT}`);
 });
