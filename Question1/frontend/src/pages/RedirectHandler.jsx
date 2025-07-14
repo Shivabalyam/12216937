@@ -1,29 +1,47 @@
 import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { log } from '../logger/logMiddleware';
 
 const RedirectHandler = () => {
   const { shortCode } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const redirectToLongUrl = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/${shortCode}`);
-        const data = await res.json();
-        if (data.originalUrl) {
-          log('Redirecting to', data.originalUrl);
+        const response = await fetch(`http://localhost:5000/${shortCode}`);
+        const data = await response.json();
+
+        if (response.ok && data.originalUrl) {
+          log('Redirecting to original URL', {
+            shortCode,
+            destination: data.originalUrl,
+          });
+
+          // Redirect
           window.location.href = data.originalUrl;
         } else {
-          log('Invalid or expired link', data);
+          log('Link invalid or expired', {
+            shortCode,
+            error: data.error || 'Unknown error',
+          });
+
           alert("This link is expired or doesn't exist.");
+          navigate('/');
         }
-      } catch (err) {
-        log('Redirect error', err.message);
-        alert("Error occurred during redirection.");
+      } catch (error) {
+        log('Redirect handler error', {
+          shortCode,
+          error: error.message,
+        });
+
+        alert('Error occurred during redirection.');
+        navigate('/');
       }
     };
+
     redirectToLongUrl();
-  }, [shortCode]);
+  }, [shortCode, navigate]);
 
   return <div>Redirecting...</div>;
 };
